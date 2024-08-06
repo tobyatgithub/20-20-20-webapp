@@ -17,5 +17,8 @@ Develop a web site using react with ts. The main idea of this 20-20-20 web app i
 
 # TODOS
 - [ ] deploy
+- [ ] may need a better work flow for reset🤔 (right now user can go setting -> save -> to 'reset' but this is not very natural.)
+- [ ] snooze for relax
 - [ ] add a few default options (in setting window)
 - [ ] add "about" button (in setting window)
+- [ ] improve icons
