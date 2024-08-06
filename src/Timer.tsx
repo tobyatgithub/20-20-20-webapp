@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 
 interface TimerProps {
   initialTime: number;
 }
-
-const growLeaves = keyframes`
-  0% { transform: scale(0); }
-  100% { transform: scale(1); }
-`;
 
 const TimerContainer = styled.div`
   display: flex;
@@ -16,39 +11,36 @@ const TimerContainer = styled.div`
   align-items: center;
 `;
 
-const TreeContainer = styled.div`
+const CircularProgress = styled.div<{ progress: number }>`
   position: relative;
   width: 300px;
-  height: 400px;
+  height: 300px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #4caf50 ${props => props.progress * 360}deg,
+    #e0e0e0 ${props => props.progress * 360}deg 360deg
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
 
-const TreeTrunk = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 200px;
-  background-color: #8B4513;
-  border-radius: 0 0 20px 20px;
-`;
-
-const TreeLeaf = styled.div<{ delay: number }>`
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  background-color: #4CAF50;
-  border-radius: 50% 0 50% 50%;
-  transform: rotate(45deg) scale(0);
-  animation: ${growLeaves} 20s ease-out forwards;
-  animation-delay: ${props => props.delay}s;
+const InnerCircle = styled.div`
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background-color: #e8f5e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const TimerDisplay = styled.h1`
   font-size: 3rem;
   color: #2c3e50;
   font-weight: 300;
-  margin-top: 2rem;
 `;
 
 const ButtonContainer = styled.div`
@@ -111,29 +103,15 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const leafPositions = [
-    { top: 50, left: 100 },
-    { top: 100, left: 50 },
-    { top: 100, left: 150 },
-    { top: 150, left: 0 },
-    { top: 150, left: 200 },
-    { top: 200, left: 50 },
-    { top: 200, left: 150 },
-  ];
+  const progress = 1 - time / initialTime;
 
   return (
     <TimerContainer>
-      <TreeContainer>
-        <TreeTrunk />
-        {leafPositions.map((pos, index) => (
-          <TreeLeaf
-            key={index}
-            style={{ top: pos.top, left: pos.left }}
-            delay={index * (initialTime / leafPositions.length)}
-          />
-        ))}
-      </TreeContainer>
-      <TimerDisplay>{formatTime(time)}</TimerDisplay>
+      <CircularProgress progress={progress}>
+        <InnerCircle>
+          <TimerDisplay>{formatTime(time)}</TimerDisplay>
+        </InnerCircle>
+      </CircularProgress>
       <ButtonContainer>
         <Button onClick={toggleTimer}>
           {isActive ? 'Pause' : 'Start'}
