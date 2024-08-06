@@ -161,7 +161,7 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     const [isActive, setIsActive] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [customTime, setCustomTime] = useState(Math.floor(initialTime / 60)); // Convert to minutes for settings
+    const [customTime, setCustomTime] = useState(String(Math.floor(initialTime / 60)));
     const [totalTime, setTotalTime] = useState(initialTime);
     const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
     const alertShownRef = useRef(false);
@@ -216,13 +216,25 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     };
   
     const resetTimer = () => {
-      const newTotalTime = customTime * 60;
-      setTime(newTotalTime);
-      setTotalTime(newTotalTime);
-      setIsActive(false);
-      setIsPaused(false);
-      alertShownRef.current = false;
-    };
+        const numericCustomTime = Number(customTime);
+        if (!isNaN(numericCustomTime) && numericCustomTime > 0) {
+          const newTotalTime = numericCustomTime * 60;
+          setTime(newTotalTime);
+          setTotalTime(newTotalTime);
+          setIsActive(false);
+          setIsPaused(false);
+          alertShownRef.current = false;
+        } else {
+          // Handle invalid input, set to a default value
+          const defaultTime = 20 * 60; // 20 minutes in seconds
+          setTime(defaultTime);
+          setTotalTime(defaultTime);
+          setCustomTime('20');
+          setIsActive(false);
+          setIsPaused(false);
+          alertShownRef.current = false;
+        }
+      };
   
     const formatTime = (seconds: number): string => {
       const mins = Math.floor(seconds / 60);
@@ -265,14 +277,27 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     };
   
     const handleSettingsClose = () => {
-      setShowSettings(false);
-      resetTimer();
-    };
+        setShowSettings(false);
+        const numericValue = Number(customTime);
+        if (!isNaN(numericValue) && numericValue > 0) {
+          setCustomTime(String(numericValue));
+          resetTimer();
+        } else {
+          // Handle invalid input
+          setCustomTime('20');
+          setTotalTime(20 * 60);
+        }
+      };
   
     const handleCustomTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newCustomTime = Number(e.target.value);
-        setCustomTime(newCustomTime);
-        setTotalTime(newCustomTime * 60);
+        const value = e.target.value;
+        const cleanedValue = value.replace(/^0+(?=\d)/, '');
+        setCustomTime(cleanedValue);
+        
+        const numericValue = Number(cleanedValue);
+        if (!isNaN(numericValue)) {
+          setTotalTime(numericValue * 60);
+        }
       };
   
     return (
