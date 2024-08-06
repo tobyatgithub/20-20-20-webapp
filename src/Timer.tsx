@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 interface TimerProps {
   initialTime: number;
 }
+
+const breatheAnimation = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+`;
 
 const TimerContainer = styled.div`
   display: flex;
@@ -11,20 +17,15 @@ const TimerContainer = styled.div`
   align-items: center;
 `;
 
-const CircularProgress = styled.div<{ progress: number }>`
-  position: relative;
+const BreathingCircle = styled.div<{ isBreathing: boolean }>`
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    #4caf50 ${props => props.progress * 360}deg,
-    #e0e0e0 ${props => props.progress * 360}deg 360deg
-  );
+  background-color: #4caf50;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  animation: ${props => props.isBreathing ? breatheAnimation : 'none'} 5s infinite ease-in-out;
 `;
 
 const InnerCircle = styled.div`
@@ -33,6 +34,7 @@ const InnerCircle = styled.div`
   border-radius: 50%;
   background-color: #e8f5e9;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 `;
@@ -41,6 +43,12 @@ const TimerDisplay = styled.h1`
   font-size: 3rem;
   color: #2c3e50;
   font-weight: 300;
+  margin-bottom: 0.5rem;
+`;
+
+const BreathText = styled.p`
+  font-size: 1.2rem;
+  color: #2c3e50;
 `;
 
 const ButtonContainer = styled.div`
@@ -69,22 +77,30 @@ const Button = styled.button`
 const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const [time, setTime] = useState(initialTime);
   const [isActive, setIsActive] = useState(false);
+  const [breathPhase, setBreathPhase] = useState('Breathe In');
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
+    let breathInterval: NodeJS.Timeout | null = null;
 
     if (isActive && time > 0) {
       interval = setInterval(() => {
         setTime((prevTime) => prevTime - 1);
       }, 1000);
+
+      breathInterval = setInterval(() => {
+        setBreathPhase((prev) => prev === 'Breathe In' ? 'Breathe Out' : 'Breathe In');
+      }, 5000);
     } else if (time === 0) {
       setIsActive(false);
       if (interval) clearInterval(interval);
+      if (breathInterval) clearInterval(breathInterval);
       // TODO: Trigger notification
     }
 
     return () => {
       if (interval) clearInterval(interval);
+      if (breathInterval) clearInterval(breathInterval);
     };
   }, [isActive, time]);
 
@@ -95,6 +111,7 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const resetTimer = () => {
     setTime(initialTime);
     setIsActive(false);
+    setBreathPhase('Breathe In');
   };
 
   const formatTime = (seconds: number): string => {
@@ -103,15 +120,14 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = 1 - time / initialTime;
-
   return (
     <TimerContainer>
-      <CircularProgress progress={progress}>
+      <BreathingCircle isBreathing={isActive}>
         <InnerCircle>
           <TimerDisplay>{formatTime(time)}</TimerDisplay>
+          <BreathText>{isActive ? breathPhase : 'Ready'}</BreathText>
         </InnerCircle>
-      </CircularProgress>
+      </BreathingCircle>
       <ButtonContainer>
         <Button onClick={toggleTimer}>
           {isActive ? 'Pause' : 'Start'}
