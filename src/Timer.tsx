@@ -164,6 +164,18 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const [customTime, setCustomTime] = useState(initialTime);
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const alertShownRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio('/notification_sound.mp3'); // Make sure to add this sound file to your public folder
+  }, []);
+
+  const playNotificationSound = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => console.error('Error playing sound:', error));
+    }
+  };
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -232,12 +244,15 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
           body: 'Time to take a break! Look at something 20 feet away.',
           icon: '/logo192.png'
         });
+        playNotificationSound();
       } catch (error) {
         console.error("Error sending notification:", error);
         alert("Time's up! Take a break and look at something 20 feet away.");
+        playNotificationSound();
       }
     } else {
       alert("Time's up! Take a break and look at something 20 feet away.");
+      playNotificationSound();
     }
   };
 
