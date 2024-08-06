@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 interface TimerProps {
@@ -31,16 +31,17 @@ const InnerCircle = styled.div`
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background-color: #e8f5e9;
+  background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
-const TimerDisplay = styled.h1`
+const TimerDisplay = styled.h1<{ $isFinished: boolean }>`
   font-size: 3rem;
-  color: #2c3e50;
+  color: ${props => props.$isFinished ? '#4caf50' : '#2c3e50'};
   font-weight: 300;
+  transition: color 0.3s ease;
 `;
 
 const ButtonContainer = styled.div`
@@ -62,13 +63,15 @@ const Button = styled.button`
 
   &:hover {
     background-color: #2c3e50;
-    color: #e8f5e9;
+    color: #fff;
   }
 `;
 
 const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const [time, setTime] = useState(initialTime);
   const [isActive, setIsActive] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const alertShownRef = useRef(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -77,10 +80,11 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
       interval = setInterval(() => {
         setTime((prevTime) => prevTime - 1);
       }, 1000);
-    } else if (time === 0) {
+    } else if (time === 0 && !alertShownRef.current) {
       setIsActive(false);
       if (interval) clearInterval(interval);
-      // TODO: Trigger notification
+      triggerNotification();
+      alertShownRef.current = true;
     }
 
     return () => {
@@ -88,13 +92,21 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     };
   }, [isActive, time]);
 
+  useEffect(() => {
+    setNotificationPermission(Notification.permission);
+  }, []);
+
   const toggleTimer = () => {
     setIsActive(!isActive);
+    if (!isActive) {
+      alertShownRef.current = false;
+    }
   };
 
   const resetTimer = () => {
     setTime(initialTime);
     setIsActive(false);
+    alertShownRef.current = false;
   };
 
   const formatTime = (seconds: number): string => {
@@ -103,13 +115,45 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const requestNotificationPermission = async () => {
+    console.log("Requesting notification permission...");
+    try {
+      const permission = await Notification.requestPermission();
+      console.log("Notification permission:", permission);
+      setNotificationPermission(permission);
+    } catch (error) {
+      console.error("Error requesting notification permission:", error);
+    }
+  };
+
+  const triggerNotification = () => {
+    console.log("Attempting to trigger notification...");
+    console.log("Current notification permission:", notificationPermission);
+  
+    if (notificationPermission === 'granted') {
+      try {
+        new Notification('20-20-20 Timer', {
+          body: 'Time to take a 20-second break! Look at something 20 feet away.',
+          icon: '/public/logo192.png'
+        });
+        console.log("Notification sent successfully.");
+      } catch (error) {
+        console.error("Error sending notification:", error);
+        alert("Time's up! Take a 20-second break and look at something 20 feet away.");
+      }
+    } else {
+      console.log("Notification permission not granted");
+      alert("Time's up! Take a 20-second break and look at something 20 feet away.");
+    }
+  };
+
   const progress = 1 - time / initialTime;
 
   return (
     <TimerContainer>
       <CircularProgress progress={progress}>
         <InnerCircle>
-          <TimerDisplay>{formatTime(time)}</TimerDisplay>
+          <TimerDisplay $isFinished={time === 0}>{formatTime(time)}</TimerDisplay>
         </InnerCircle>
       </CircularProgress>
       <ButtonContainer>
@@ -117,6 +161,9 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
           {isActive ? 'Pause' : 'Start'}
         </Button>
         <Button onClick={resetTimer}>Reset</Button>
+        {notificationPermission !== 'granted' && (
+          <Button onClick={requestNotificationPermission}>Enable Notifications</Button>
+        )}
       </ButtonContainer>
     </TimerContainer>
   );
