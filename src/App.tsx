@@ -1,15 +1,21 @@
 import React from 'react';
-import './App.css';
+import styled from 'styled-components';
 import Timer from './Timer';
+
+const AppContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #e8f5e9;
+  font-family: 'Arial', sans-serif;
+`;
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>20-20-20 App</h1>
-        <Timer initialTime={1200} /> {/* 20 minutes in seconds */}
-      </header>
-    </div>
+    <AppContainer>
+      <Timer initialTime={1200} /> {/* 20 minutes in seconds */}
+    </AppContainer>
   );
 }
 
