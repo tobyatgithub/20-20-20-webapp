@@ -7,14 +7,14 @@ const AppContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #e6f3ff;
+  background-color: #e8f5e9;
   font-family: 'Arial', sans-serif;
 `;
 
 const App: React.FC = () => {
   return (
     <AppContainer>
-      <Timer initialTime={1200} /> {/* 20 minutes in seconds */}
+      <Timer initialTime={120} /> {/* 20 minutes in seconds */}
     </AppContainer>
   );
 }

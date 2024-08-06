@@ -5,9 +5,8 @@ interface TimerProps {
   initialTime: number;
 }
 
-const breatheAnimation = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+const growLeaves = keyframes`
+  0% { transform: scale(0); }
   100% { transform: scale(1); }
 `;
 
@@ -17,38 +16,39 @@ const TimerContainer = styled.div`
   align-items: center;
 `;
 
-const BreathingCircle = styled.div<{ isBreathing: boolean }>`
+const TreeContainer = styled.div`
+  position: relative;
   width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background-color: #4caf50;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: ${props => props.isBreathing ? breatheAnimation : 'none'} 5s infinite ease-in-out;
+  height: 400px;
 `;
 
-const InnerCircle = styled.div`
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background-color: #e8f5e9;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+const TreeTrunk = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 200px;
+  background-color: #8B4513;
+  border-radius: 0 0 20px 20px;
+`;
+
+const TreeLeaf = styled.div<{ delay: number }>`
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background-color: #4CAF50;
+  border-radius: 50% 0 50% 50%;
+  transform: rotate(45deg) scale(0);
+  animation: ${growLeaves} 20s ease-out forwards;
+  animation-delay: ${props => props.delay}s;
 `;
 
 const TimerDisplay = styled.h1`
   font-size: 3rem;
   color: #2c3e50;
   font-weight: 300;
-  margin-bottom: 0.5rem;
-`;
-
-const BreathText = styled.p`
-  font-size: 1.2rem;
-  color: #2c3e50;
+  margin-top: 2rem;
 `;
 
 const ButtonContainer = styled.div`
@@ -77,30 +77,22 @@ const Button = styled.button`
 const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const [time, setTime] = useState(initialTime);
   const [isActive, setIsActive] = useState(false);
-  const [breathPhase, setBreathPhase] = useState('Breathe In');
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    let breathInterval: NodeJS.Timeout | null = null;
 
     if (isActive && time > 0) {
       interval = setInterval(() => {
         setTime((prevTime) => prevTime - 1);
       }, 1000);
-
-      breathInterval = setInterval(() => {
-        setBreathPhase((prev) => prev === 'Breathe In' ? 'Breathe Out' : 'Breathe In');
-      }, 5000);
     } else if (time === 0) {
       setIsActive(false);
       if (interval) clearInterval(interval);
-      if (breathInterval) clearInterval(breathInterval);
       // TODO: Trigger notification
     }
 
     return () => {
       if (interval) clearInterval(interval);
-      if (breathInterval) clearInterval(breathInterval);
     };
   }, [isActive, time]);
 
@@ -111,7 +103,6 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
   const resetTimer = () => {
     setTime(initialTime);
     setIsActive(false);
-    setBreathPhase('Breathe In');
   };
 
   const formatTime = (seconds: number): string => {
@@ -120,14 +111,29 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const leafPositions = [
+    { top: 50, left: 100 },
+    { top: 100, left: 50 },
+    { top: 100, left: 150 },
+    { top: 150, left: 0 },
+    { top: 150, left: 200 },
+    { top: 200, left: 50 },
+    { top: 200, left: 150 },
+  ];
+
   return (
     <TimerContainer>
-      <BreathingCircle isBreathing={isActive}>
-        <InnerCircle>
-          <TimerDisplay>{formatTime(time)}</TimerDisplay>
-          <BreathText>{isActive ? breathPhase : 'Ready'}</BreathText>
-        </InnerCircle>
-      </BreathingCircle>
+      <TreeContainer>
+        <TreeTrunk />
+        {leafPositions.map((pos, index) => (
+          <TreeLeaf
+            key={index}
+            style={{ top: pos.top, left: pos.left }}
+            delay={index * (initialTime / leafPositions.length)}
+          />
+        ))}
+      </TreeContainer>
+      <TimerDisplay>{formatTime(time)}</TimerDisplay>
       <ButtonContainer>
         <Button onClick={toggleTimer}>
           {isActive ? 'Pause' : 'Start'}
