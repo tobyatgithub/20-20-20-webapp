@@ -9,40 +9,61 @@ const TimerContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const CircularProgress = styled.div<{ progress: number }>`
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #4caf50 ${props => props.progress * 360}deg,
+    #e0e0e0 ${props => props.progress * 360}deg 360deg
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+`;
+
+const InnerCircle = styled.div`
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background-color: #e8f5e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const TimerDisplay = styled.h1`
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  color: #333;
+  font-size: 3rem;
+  color: #2c3e50;
+  font-weight: 300;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
 `;
 
 const Button = styled.button`
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  margin: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.2rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: transparent;
+  color: #2c3e50;
+  border: 2px solid #2c3e50;
 
   &:hover {
-    opacity: 0.8;
+    background-color: #2c3e50;
+    color: #e8f5e9;
   }
-`;
-
-const StartButton = styled(Button)`
-  background-color: #4caf50;
-  color: white;
-`;
-
-const ResetButton = styled(Button)`
-  background-color: #f44336;
-  color: white;
 `;
 
 const Timer: React.FC<TimerProps> = ({ initialTime }) => {
@@ -82,15 +103,21 @@ const Timer: React.FC<TimerProps> = ({ initialTime }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const progress = 1 - time / initialTime;
+
   return (
     <TimerContainer>
-      <TimerDisplay>{formatTime(time)}</TimerDisplay>
-      <div>
-        <StartButton onClick={toggleTimer}>
+      <CircularProgress progress={progress}>
+        <InnerCircle>
+          <TimerDisplay>{formatTime(time)}</TimerDisplay>
+        </InnerCircle>
+      </CircularProgress>
+      <ButtonContainer>
+        <Button onClick={toggleTimer}>
           {isActive ? 'Pause' : 'Start'}
-        </StartButton>
-        <ResetButton onClick={resetTimer}>Reset</ResetButton>
-      </div>
+        </Button>
+        <Button onClick={resetTimer}>Reset</Button>
+      </ButtonContainer>
     </TimerContainer>
   );
 };

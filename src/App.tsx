@@ -7,7 +7,7 @@ const AppContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #e8f5e9;
+  background-color: #f0f4f8;
   font-family: 'Arial', sans-serif;
 `;
 
