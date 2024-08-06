@@ -14,7 +14,7 @@ const AppContainer = styled.div`
 const App: React.FC = () => {
   return (
     <AppContainer>
-      <Timer initialTime={3} /> {/* 20 minutes in seconds */}
+      <Timer initialTime={1200} /> {/* 20 minutes in seconds */}
     </AppContainer>
   );
 }
